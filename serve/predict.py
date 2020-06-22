@@ -91,13 +91,13 @@ def predict_fn(input_data, model):
     return result
 
 def review_to_words(review):
-    nltk.download("stopwords", quiet=True)
+    # nltk.download("stopwords", quiet=True)
     stemmer = PorterStemmer()
     
     text = BeautifulSoup(review, "html.parser").get_text() # Remove HTML tags
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower()) # Convert to lower case
     words = text.split() # Split string into words
-    words = [w for w in words if w not in stopwords.words("english")] # Remove stopwords
+    # words = [w for w in words if w not in stopwords.words("english")] # Remove stopwords
     words = [PorterStemmer().stem(w) for w in words] # stem
     
     return words
