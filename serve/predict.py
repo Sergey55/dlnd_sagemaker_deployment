@@ -70,8 +70,7 @@ def predict_fn(input_data, model):
     #         data_X   - A sequence of length 500 which represents the converted review
     #         data_len - The length of the review
 
-    data_X = None
-    data_len = None
+    data_X, data_len = convert_and_pad(model.word_dict, review_to_words(input_data))
 
     # Using data_X and data_len we construct an appropriate input tensor. Remember
     # that our model expects input data of the form 'len, review[500]'.
@@ -87,6 +86,32 @@ def predict_fn(input_data, model):
     # TODO: Compute the result of applying the model to the input data. The variable `result` should
     #       be a numpy array which contains a single integer which is either 1 or 0
 
-    result = None
+    result = np.round(model(data))
 
     return result
+
+def review_to_words(review):
+    nltk.download("stopwords", quiet=True)
+    stemmer = PorterStemmer()
+    
+    text = BeautifulSoup(review, "html.parser").get_text() # Remove HTML tags
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower()) # Convert to lower case
+    words = text.split() # Split string into words
+    words = [w for w in words if w not in stopwords.words("english")] # Remove stopwords
+    words = [PorterStemmer().stem(w) for w in words] # stem
+    
+    return words
+
+def convert_and_pad(word_dict, sentence, pad=500):
+    NOWORD = 0 # We will use 0 to represent the 'no word' category
+    INFREQ = 1 # and we use 1 to represent the infrequent words, i.e., words not appearing in word_dict
+    
+    working_sentence = [NOWORD] * pad
+    
+    for word_index, word in enumerate(sentence[:pad]):
+        if word in word_dict:
+            working_sentence[word_index] = word_dict[word]
+        else:
+            working_sentence[word_index] = INFREQ
+            
+    return working_sentence, min(len(sentence), pad)
